@@ -14,6 +14,7 @@ struct colectivo{
 	float km;
 	int alta[3];
 	int adap;
+	int estado;
 }col;
 
 //nos quedamos en la baja de usuarios
@@ -28,12 +29,14 @@ typedef struct {
 } Usuarios;
 
 typedef struct {
+	int id;
 	long int DNIChofer;
 	char NombreChofer[100];
 	int FechaNacimiento[3];
 	char direccion[100];
 	long int telefono;
 	char email [100];
+	int estado;
 }chofer;
 
 //FUNCIONES PARA LA GESTION DE USUARIOS
@@ -60,7 +63,6 @@ void gestionar_MTyC();//COMPLETO
 void registros_choferes(char nombreAr[]);//COMPLETO
 void registros_unidades(char nombreAr[]);//COMPLETO
 void fecha(int fecha[3]);
-void dar_baja();//INCOMPLETO
 void modificaciones();//COMPLETO
 //COMPLETO
 void mod_chofer(FILE *fch);
@@ -484,6 +486,7 @@ void registros_choferes(char nombreAr[]){
 	{
 		puts("\n------------------------\n");
 		printf("\nDatos del Nuevo Chofer\n");
+		
 		printf("\nDni:");
 		fflush(stdin);
 		scanf("%ld",&ch.DNIChofer);
@@ -584,12 +587,6 @@ void fecha(int fecha[3]) {
     fecha[2] = tmInfo->tm_year + 1900;  // Año (desde 1900)
 
     // Nota: Sumamos 1 al mes y 1900 al año para obtener los valores reales.
-}
-
-/////////////////////////////////
-//BAJA CHOFER O COLECTIVO////////
-////////////////////////////////
-void dar_baja() {
 }
 
 //////////////////////////////////////
@@ -720,9 +717,13 @@ void modificar_dni(struct chofer *ch, long int dniviejo, FILE *fcol ) {
     	while(!feof(fcol)){
     		if(col.DNIC==dniviejo)
     			col.DNIC=ch.DNIChofer;
+    			fseek(fcol,sizeof(col)*(-1),SEEK_CUR);
+    			fwrite(&col,sizeof(col),1,fcol);
     		fread(&col,sizeof(col),1,fcol);
 		}
 	}
+	fclose(fcol);
+	fclose(fch);
 }
 
 // Función para modificar la dirección 
@@ -973,13 +974,56 @@ void movimientos_fechas() {
 void recargas_usuarios_especifico() {
 }
 
+
+////////////////////////////////
+//Num de usuarios con BENEFICIOS
+////////////////////////////////
 void usuarios_cBeneficios() {
+	if((FILE *fu=fopen("usuarios.dat","rb")!=NULL){
+		while(!feof(fu)){
+			if((u.tipoU!='normal')||(u.tipoU!=='NORMAL')){
+			puts("\n------------------------\n");
+			printf("\nDATOS DE USUARIOS\n");
+			printf("\nNombre y Apellido: %s",u.NyA);
+			printf("\nDni: %ld",u.Dni);
+			printf("\nFecha de Nacimiento: %d/%d/%d",u.fechaNac[0],u.fechaNac[1],u.fechaNac[2]);
+			printf("\nDireccion: %s",u.Direccion);
+			printf("\nNro Telefono:%ld",u.Telefono);
+			printf("\nTipo de Usuario: %s",u.tipoU);
+			printf("\nHabilitacion: %s",u.hbl);
+			fread(&u,sizeof(u),1,fu);
+			}
+		}
+	}else printf("no se pudo abrir archivo");
+fclose(fu)
 }
 
 void movimientos_usuarios_especifico() {
 }
 
+
+//Chofer/es con más pasajeros en un mes especificado por teclado.
 void choferes_pasajeros() {
+	int mes, en=0, tot=0;
+	long int id;
+	printf("ingrese mes a buscar");
+	scanf("%d",&mes);
+	if((FILE *fch=fopen("choferes.dat","rb"))!=NULL&&(FILE *fcol=fopen("colectivo.dat","rb"))!=NULL){
+		
+		while(!feof(fcol)){
+			if((col.DNIC==id)&&(col.alta[1]==mes)){
+				tot+=col.asiento;
+			}
+		}
+		
+		
+		
+	}else{
+		printf("error de apertura de archivos, intentando nuevamente...");
+		fclose(fch);
+		fclose(fcol);
+		choferes_pasajeros();
+	}	
 }
 
 void pasajeros_primerT() {
